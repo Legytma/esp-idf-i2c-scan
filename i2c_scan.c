@@ -54,7 +54,7 @@ esp_err_t i2c_scan(i2c_port_t i2c_port) {
 }
 
 esp_err_t i2c_scan_to_array(i2c_port_t i2c_port, uint8_t address_buffer[],
-							size_t buffer_size, size_t* address_count) {
+							size_t address_buffer_size, size_t* address_count) {
 	uint8_t address;
 	size_t  buffer_size = 52 + 1;
 	char    buffer[buffer_size];
@@ -86,7 +86,9 @@ esp_err_t i2c_scan_to_array(i2c_port_t i2c_port, uint8_t address_buffer[],
 
 			if (ret == ESP_OK) {
 				if (address_buffer != NULL) {
-					address_buffer[count] = address;
+					if (count <= address_buffer_size) {
+						address_buffer[count] = address;
+					}
 				}
 
 				count++;

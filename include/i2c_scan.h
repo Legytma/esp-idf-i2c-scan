@@ -32,4 +32,4 @@
 
 esp_err_t i2c_scan(i2c_port_t i2c_port);
 esp_err_t i2c_scan_to_array(i2c_port_t i2c_port, uint8_t address_buffer[],
-							size_t buffer_size, size_t* address_count);
+							size_t address_buffer_size, size_t* address_count);
