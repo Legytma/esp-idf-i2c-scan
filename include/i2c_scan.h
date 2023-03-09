@@ -23,8 +23,13 @@
 
 #pragma once
 
+#include <stdint.h>
+#include <stddef.h>
+
 #include "hal/i2c_types.h"
 
 #include "esp_err.h"
 
 esp_err_t i2c_scan(i2c_port_t i2c_port);
+esp_err_t i2c_scan_to_array(i2c_port_t i2c_port, uint8_t address_buffer[],
+							size_t buffer_size, size_t* address_count);

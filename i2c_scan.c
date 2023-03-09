@@ -21,8 +21,9 @@
  *      Author: Alex Manoel Ferreira Silva
  */
 
+#include <stddef.h>
 #include <stdint.h>
-#include <string.h>
+#include <strings.h>
 
 #include "hal/i2c_types.h"
 
@@ -37,12 +38,27 @@
 #define WRITE_BIT    I2C_MASTER_WRITE /*!< I2C master write */
 #define ACK_CHECK_EN 0x1 /*!< I2C master will check ack from slave*/
 
+#define CHECK_RET(x)           \
+	{                          \
+		esp_err_t _err_ = x;   \
+                               \
+		if (_err_ != ESP_OK) { \
+			return _err_;      \
+		}                      \
+	}
+
 LOG_TAG("i2c_scan");
 
 esp_err_t i2c_scan(i2c_port_t i2c_port) {
+	return i2c_scan_to_array(i2c_port, NULL, 0, NULL);
+}
+
+esp_err_t i2c_scan_to_array(i2c_port_t i2c_port, uint8_t address_buffer[],
+							size_t buffer_size, size_t* address_count) {
 	uint8_t address;
 	size_t  buffer_size = 52 + 1;
 	char    buffer[buffer_size];
+	size_t  count = 0;
 
 	LOGI("");
 	LOGI("I2C Port: %d", i2c_port);
@@ -58,10 +74,10 @@ esp_err_t i2c_scan(i2c_port_t i2c_port) {
 
 			i2c_cmd_handle_t cmd = i2c_cmd_link_create();
 
-			i2c_master_start(cmd);
-			i2c_master_write_byte(cmd, (address << 1) | WRITE_BIT,
-								  ACK_CHECK_EN);
-			i2c_master_stop(cmd);
+			CHECK_RET(i2c_master_start(cmd));
+			CHECK_RET(i2c_master_write_byte(cmd, (address << 1) | WRITE_BIT,
+											ACK_CHECK_EN));
+			CHECK_RET(i2c_master_stop(cmd));
 
 			esp_err_t ret =
 				i2c_master_cmd_begin(i2c_port, cmd, pdMS_TO_TICKS(50));
@@ -69,6 +85,16 @@ esp_err_t i2c_scan(i2c_port_t i2c_port) {
 			i2c_cmd_link_delete(cmd);
 
 			if (ret == ESP_OK) {
+				if (address_buffer != NULL) {
+					address_buffer[count] = address;
+				}
+
+				count++;
+
+				if (address_count != NULL) {
+					*address_count = count;
+				}
+
 				sprintf(buffer + strlen(buffer), "%02X ", address);
 			} else if (ret == ESP_ERR_TIMEOUT) {
 				sprintf(buffer + strlen(buffer), "UU ");
