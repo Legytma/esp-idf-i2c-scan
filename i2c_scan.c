@@ -23,6 +23,7 @@
 
 #include <stddef.h>
 #include <stdint.h>
+#include <string.h>
 #include <strings.h>
 
 #include "hal/i2c_types.h"
